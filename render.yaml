@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: hd-tg-api
+    runtime: docker
+    plan: free
+    envVars:
+      - key: TELEGRAM_API_ID
+        sync: false
+      - key: TELEGRAM_API_HASH
+        sync: false
+    startCommand: >
+      telegram-bot-api
+      --api-id=$TELEGRAM_API_ID
+      --api-hash=$TELEGRAM_API_HASH
+      --http-port=8081
+      --local
+      --dir=/tmp/telegram-bot-api
