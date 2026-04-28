@@ -8,4 +8,3 @@ services:
         sync: false
       - key: TELEGRAM_API_HASH
         sync: false
-    startCommand: "sh -c 'mkdir -p /tmp/tgapi && telegram-bot-api --api-id=$TELEGRAM_API_ID --api-hash=$TELEGRAM_API_HASH --http-port=8081 --local --dir=/tmp/tgapi'"
