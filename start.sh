@@ -1,9 +1,7 @@
 #!/bin/sh
-
-echo "Starting Telegram Bot API..."
 mkdir -p /var/lib/telegram-bot-api
 
-# Start Bot API in background
+# Start Bot API locally (only needs to be accessible inside container)
 telegram-bot-api \
   --api-id=$TELEGRAM_API_ID \
   --api-hash=$TELEGRAM_API_HASH \
@@ -11,6 +9,9 @@ telegram-bot-api \
   --local \
   --dir=/var/lib/telegram-bot-api &
 
-echo "Starting file server on port 10000..."
-# Start Node.js file server on port 10000 (Render's requirement)
-PORT=10000 node /server.js
+# Wait for Bot API to be ready
+echo "Waiting for Bot API to start..."
+sleep 5
+
+# Start your bot
+node index.js
