@@ -11,6 +11,6 @@ telegram-bot-api \
   --local \
   --dir=/var/lib/telegram-bot-api &
 
-echo "Starting file server..."
-# Start Node.js file server on port 3000
-node /server.js
+echo "Starting file server on port 10000..."
+# Start Node.js file server on port 10000 (Render's requirement)
+PORT=10000 node /server.js
