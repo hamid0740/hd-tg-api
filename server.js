@@ -3,41 +3,52 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 const BOT_API_DIR = '/var/lib/telegram-bot-api';
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// File download endpoint
+// Serve files directly from disk
+// Usage: /download/{botToken}/photos/file_3.jpg
 app.get('/download/:botToken/*', (req, res) => {
   const botToken = req.params.botToken;
-  const filePath = req.params[0]; // Captures the rest of the path
-  
-  // Construct full file path
-  const fullPath = path.join(BOT_API_DIR, botToken, filePath);
-  
-  // Security: prevent directory traversal
-  if (!fullPath.startsWith(BOT_API_DIR)) {
+  const filePath = req.params[0];
+  const fullPath = path.resolve(BOT_API_DIR, botToken, filePath);
+
+  if (!fullPath.startsWith(path.resolve(BOT_API_DIR))) {
     return res.status(403).json({ error: 'Access denied' });
   }
-  
-  // Check if file exists
-  fs.access(fullPath, fs.constants.F_OK, (err) => {
-    if (err) {
-      console.log(`File not found: ${fullPath}`);
-      return res.status(404).json({ error: 'File not found' });
-    }
-    
-    // Stream the file
-    res.download(fullPath, (err) => {
-      if (err) {
-        console.error(`Download error for ${fullPath}:`, err);
-      }
-    });
-  });
+
+  console.log(`Serving file: ${fullPath}`);
+
+  if (!fs.existsSync(fullPath)) {
+    try {
+      const dir = path.dirname(fullPath);
+      const contents = fs.existsSync(dir) ? fs.readdirSync(dir) : ['dir not found'];
+      console.log(`Not found. Dir contents: ${contents.join(', ')}`);
+    } catch (e) {}
+    return res.status(404).json({ error: 'File not found', path: fullPath });
+  }
+
+  res.sendFile(fullPath);
+});
+
+// Debug: list ALL files the bot API has stored
+app.get('/debug/files', (req, res) => {
+  try {
+    const walk = (dir) => {
+      if (!fs.existsSync(dir)) return [];
+      return fs.readdirSync(dir).flatMap(f => {
+        const full = path.join(dir, f);
+        return fs.statSync(full).isDirectory() ? walk(full) : [full];
+      });
+    };
+    res.json({ files: walk(BOT_API_DIR) });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.listen(PORT, () => {
