@@ -1,19 +1,16 @@
 FROM aiogram/telegram-bot-api:latest
 
-# Install Node.js (lightweight)
 RUN apk add --no-cache nodejs npm
 
-# Copy start script and file server
+WORKDIR /app
+COPY package.json ./
+RUN npm install
+
 COPY start.sh /start.sh
-COPY server.js /server.js
-COPY package.json /package.json
+COPY index.js ./
+COPY wrangler.toml ./
 
 RUN chmod +x /start.sh
 
-# Install npm dependencies
-WORKDIR /
-RUN npm install
-
-EXPOSE 8085 10000
-
+EXPOSE 10000
 CMD ["/start.sh"]
