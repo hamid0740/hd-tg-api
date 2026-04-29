@@ -14,6 +14,6 @@ RUN chmod +x /start.sh
 WORKDIR /
 RUN npm install
 
-EXPOSE 8085 3000
+EXPOSE 8085 10000
 
 CMD ["/start.sh"]
